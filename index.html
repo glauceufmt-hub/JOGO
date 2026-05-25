@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Poraquê: Equilíbrio Ecológico – Agora com apenas 4 ariranhas!</title>
+    <style>
+        * {
+            user-select: none;
+            box-sizing: border-box;
+            touch-action: manipulation;
+        }
+
+        body {
+            background: linear-gradient(145deg, #0a2f2a 0%, #031f1b 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Segoe UI', 'Poppins', system-ui, sans-serif;
+            margin: 0;
+            padding: 16px;
+        }
+
+        .game-universe {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            max-width: 700px;
+            width: 100%;
+        }
+
+        .canvas-area {
+            background: #1e3b2f;
+            border-radius: 32px;
+            padding: 12px;
+            box-shadow: 0 20px 30px rgba(0,0,0,0.5), inset 0 1px 4px rgba(255,255,200,0.2);
+            border: 1px solid #e9c468;
+        }
+
+        canvas {
+            display: block;
+            margin: 0 auto;
+            border-radius: 20px;
+            box-shadow: 0 0 0 4px #4b3621, 0 8px 20px black;
+            background-color: #1b5a44;
+            cursor: pointer;
+            width: 100%;
+            height: auto;
+        }
+
+        .action-bar {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 12px;
+            margin-bottom: 12px;
+        }
+
+        .discharge-btn, .restart-btn {
+            font-family: inherit;
+            font-weight: bold;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 60px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: 0.08s linear;
+        }
+
+        .discharge-btn {
+            background: #ffb347;
+            box-shadow: 0 4px 0 #7a3e0a;
+            color: #2c2b1f;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .discharge-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 #7a3e0a;
+        }
+
+        .discharge-btn.disabled {
+            opacity: 0.5;
+            transform: none;
+            cursor: not-allowed;
+            filter: grayscale(0.2);
+        }
+
+        .restart-btn {
+            background: #3f2b1d;
+            border: 1px solid #edb16b;
+            color: #ffdead;
+        }
+
+        .restart-btn:hover {
+            background: #5f3e2a;
+            transform: scale(1.02);
+        }
+
+        .touch-controls {
+            display: inline-flex;
+            gap: 10px;
+            background: #1f3f33aa;
+            backdrop-filter: blur(8px);
+            padding: 6px 12px;
+            border-radius: 60px;
+        }
+
+        .arrow-pad {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .arrow-row {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .arrow-btn {
+            background: #2c3e2bdd;
+            backdrop-filter: blur(8px);
+            border: 2px solid #ffd58c;
+            width: 48px;
+            height: 48px;
+            border-radius: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #ffeaac;
+            cursor: pointer;
+            transition: 0.05s linear;
+            box-shadow: 0 3px 0 #5a3a1a;
+            touch-action: manipulation;
+        }
+
+        .arrow-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 #5a3a1a;
+        }
+
+        .stats-panel {
+            background: #1f4033cc;
+            backdrop-filter: blur(8px);
+            padding: 8px 16px;
+            border-radius: 50px;
+            border: 1px solid #e7c875;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            width: 100%;
+        }
+
+        .stat {
+            background: #040f0bb3;
+            padding: 4px 14px;
+            border-radius: 40px;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            font-size: 0.9rem;
+            color: #ffe3a3;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .stat span {
+            font-size: 1.1rem;
+            color: #ffd966;
+        }
+
+        .ecology-card {
+            background: #0f2f27e6;
+            backdrop-filter: blur(12px);
+            border-radius: 28px;
+            padding: 12px 16px;
+            border-left: 5px solid #ffc857;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.4);
+            color: #fbf5cf;
+            width: 100%;
+            font-size: 0.8rem;
+        }
+
+        .ecology-card h3 {
+            margin: 0 0 6px 0;
+            font-size: 1.1rem;
+            color: #ffde9c;
+        }
+
+        .ecology-card p {
+            margin: 6px 0;
+        }
+
+        .badge {
+            background: #2c5e42;
+            border-radius: 60px;
+            padding: 3px 10px;
+            font-weight: bold;
+            font-size: 0.65rem;
+            display: inline-block;
+            margin: 3px 3px 0 0;
+        }
+
+        .controls-tip {
+            font-size: 0.65rem;
+            background: #00000066;
+            padding: 3px 10px;
+            border-radius: 40px;
+            text-align: center;
+        }
+
+        @media (max-width: 600px) {
+            .arrow-btn { width: 42px; height: 42px; font-size: 1.3rem; }
+            .stat { font-size: 0.75rem; padding: 3px 10px; }
+            .stat span { font-size: 0.9rem; }
+        }
+
+        .modal-edu {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(2, 20, 15, 0.92);
+            backdrop-filter: blur(6px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: #1f3d32;
+            max-width: 90%;
+            width: 420px;
+            border-radius: 40px;
+            padding: 20px 24px;
+            color: #fef0cf;
+            border: 2px solid #ffcf6e;
+            box-shadow: 0 20px 40px black;
+            animation: fadeSlide 0.3s ease;
+        }
+
+        .modal-content h2 {
+            color: #ffdd99;
+            font-size: 1.4rem;
+            margin-top: 0;
+        }
+
+        .modal-content button {
+            background: #e69d2e;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 40px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            margin-top: 16px;
+            cursor: pointer;
+        }
+
+        .mobile-note {
+            background: #2c5e42aa;
+            border-left: 3px solid #ffc857;
+            padding: 6px 10px;
+            border-radius: 24px;
+            margin-top: 12px;
+            font-style: italic;
+            font-size: 0.8rem;
+        }
+
+        @keyframes fadeSlide {
+            from { opacity: 0; transform: translateY(20px);}
+            to { opacity: 1; transform: translateY(0);}
+        }
+
+        .lightning-flash {
+            animation: zapFlash 0.12s ease-out;
+        }
+
+        @keyframes zapFlash {
+            0% { filter: brightness(1);}
+            50% { filter: brightness(1.8) drop-shadow(0 0 3px cyan);}
+            100% { filter: brightness(1);}
+        }
+    </style>
+</head>
+<body>
+<div class="game-universe">
+    <div class="canvas-area">
+        <canvas id="gameCanvas" width="500" height="500"></canvas>
+
+        <div class="action-bar">
+            <button id="dischargeButton" class="discharge-btn">⚡ ELETRICIDADE (2)</button>
+            <button id="restartButton" class="restart-btn">🌿 RENASCER</button>
+            <div class="touch-controls">
+                <div class="arrow-pad">
+                    <div class="arrow-row">
+                        <div class="arrow-btn" data-dir="UP">▲</div>
+                    </div>
+                    <div class="arrow-row">
+                        <div class="arrow-btn" data-dir="LEFT">◀</div>
+                        <div class="arrow-btn" data-dir="DOWN">▼</div>
+                        <div class="arrow-btn" data-dir="RIGHT">▶</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="controls-tip desktop-only" style="margin-top: 4px;">💻 Computador: SETAS do teclado | ⚡ Tecla [E] para eletricidade</div>
+    </div>
+
+    <div class="stats-panel">
+        <div class="stat">🐟 PIRANHAS: <span id="eatCount">0</span> / <span id="targetCount">3</span></div>
+        <div class="stat">⚡ TAMANHO: <span id="snakeLength">5</span></div>
+        <div class="stat">🦦 ARIRANHAS: <span id="ariranhaCount">4</span></div>
+        <div class="stat">⚡ CARGAS: <span id="chargeCount">2</span></div>
+    </div>
+
+    <div class="ecology-card">
+        <h3>🌎 CADEIA ALIMENTAR</h3>
+        <p>⚡ <strong>PORAQUÊ (peixe elétrico)</strong> come 3 piranhas e vira adulto, topo da cadeia!<br>
+        🦦 <strong>ARIRANHAS (4)</strong> marcam TERRITÓRIO 4x4 (área laranja). Pisar ali = GAME OVER.<br>
+        ⚡ <strong>ELETRICIDADE (2 usos)</strong> teleporta todas as ariranhas para longe.</p>
+        <div class="badge">🎯 Use a eletricidade para alcançar as piranhas!</div>
+    </div>
+</div>
+
+<div id="introModal" class="modal-edu">
+    <div class="modal-content">
+        <h2>⚡ CADEIA ALIMENTAR – APRENDA JOGANDO</h2>
+        <p><strong>🌿 DINÂMICA:</strong></p>
+        <p>🔹 <strong>PIRANHAS</strong> em superpopulação desequilibram o rio, devorando outros peixes. Você é o <strong>PORAQUÊ</strong> (peixe elétrico) e deve controlar essa população.<br>
+        🔹 <strong>ARIRANHAS (4)</strong> são predadoras e dominam um TERRITÓRIO 4x4. Entrar na área laranja = GAME OVER.<br>
+        🔹 Use a <strong>ELETRICIDADE (2 cargas)</strong> para teleportar todas as ariranhas para longe.<br>
+        🔹 Coma <strong>3 PIRANHAS</strong> e torne-se adulto: TOPO DA CADEIA ALIMENTAR!</p>
+        <div class="mobile-note">
+            📱 <strong>Celular:</strong> use as setas na tela (ao lado do botão de eletricidade).
+        </div>
+        <button id="closeModalBtn">⚡ VAMOS EQUILIBRAR O ECOSSISTEMA ⚡</button>
+    </div>
+</div>
+
+<script>
+    (function(){
+        // ========== CONFIGURAÇÕES: AGORA APENAS 4 ARIRANHAS ==========
+        const GRID_SIZE = 20;
+        const CELL_SIZE = 25;
+        const WIN_PIRANHAS = 3;
+        const ARIRANHA_COUNT = 4;          // REDUZIDO pela metade (antes 8)
+        const DISCHARGE_COOLDOWN_MS = 1800;
+        const GAME_SPEED_MS = 250;
+        const MIN_DISTANCE_FROM_SNAKE = 4;
+
+        let dischargeCharges = 2;
+        let dischargeOnCooldown = false;
+        let cooldownTimeout = null;
+
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const eatCountSpan = document.getElementById('eatCount');
+        const targetCountSpan = document.getElementById('targetCount');
+        const snakeLengthSpan = document.getElementById('snakeLength');
+        const ariranhaCountSpan = document.getElementById('ariranhaCount');
+        const chargeCountSpan = document.getElementById('chargeCount');
+        const dischargeBtn = document.getElementById('dischargeButton');
+        const restartBtn = document.getElementById('restartButton');
+
+        let snake = [];           
+        let direction = 'RIGHT';
+        let nextDirection = 'RIGHT';
+        let food = { x: 16, y: 12 };
+        let ariranhas = [];
+        let piranhasEaten = 0;
+        let gameActive = true;
+        let victoryFlag = false;
+        let gameLoopInterval = null;
+        let newSegmentsToAdd = 0;
+
+        function isInsideTerritory(x, y) {
+            for(let a of ariranhas) {
+                if(x >= a.x-1 && x <= a.x+2 && y >= a.y-1 && y <= a.y+2) return true;
+            }
+            return false;
+        }
+
+        function checkTerritoryCollision() {
+            if(!gameActive || victoryFlag) return false;
+            for(let seg of snake) {
+                if(isInsideTerritory(seg.x, seg.y)) {
+                    gameOver();
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function isPositionValidForFood(x, y) {
+            if(snake.some(seg => seg.x === x && seg.y === y)) return false;
+            if(food && food.x === x && food.y === y) return false;
+            if(isInsideTerritory(x, y)) return false;
+            for(let a of ariranhas) {
+                if(x >= a.x && x <= a.x+1 && y >= a.y && y <= a.y+1) return false;
+            }
+            return true;
+        }
+
+        function getRandomEmptyPositionForFood() {
+            for(let attempt=0; attempt<2000; attempt++) {
+                const randX = Math.floor(Math.random() * GRID_SIZE);
+                const randY = Math.floor(Math.random() * GRID_SIZE);
+                if(isPositionValidForFood(randX, randY)) return { x: randX, y: randY };
+            }
+            for(let i=0;i<GRID_SIZE;i++) {
+                for(let j=0;j<GRID_SIZE;j++) {
+                    if(isPositionValidForFood(i,j)) return { x:i, y:j };
+                }
+            }
+            return { x: 5, y: 5 };
+        }
+
+        function respawnFood() {
+            food = getRandomEmptyPositionForFood();
+        }
+
+        function isPositionValidForAriranha(x, y, ignoreIndex = -1) {
+            if(x < 0 || y < 0 || x+1 >= GRID_SIZE || y+1 >= GRID_SIZE) return false;
+            for(let seg of snake) {
+                if(seg.x >= x && seg.x <= x+1 && seg.y >= y && seg.y <= y+1) return false;
+            }
+            if(food.x >= x && food.x <= x+1 && food.y >= y && food.y <= y+1) return false;
+            for(let i=0; i<ariranhas.length; i++) {
+                if(i === ignoreIndex) continue;
+                let a = ariranhas[i];
+                if( (x >= a.x && x <= a.x+1) || (a.x >= x && a.x <= x+1) ) {
+                    if( (y >= a.y && y <= a.y+1) || (a.y >= y && a.y <= y+1) ) return false;
+                }
+            }
+            for(let i=0; i<ariranhas.length; i++) {
+                if(i === ignoreIndex) continue;
+                let a = ariranhas[i];
+                if( (x >= a.x-1 && x <= a.x+2) && (y >= a.y-1 && y <= a.y+2) ) return false;
+            }
+            return true;
+        }
+
+        function getRandomAriranhaPosition(ignoreIndex = -1, minDistance = 0) {
+            for(let attempt=0; attempt<2000; attempt++) {
+                const randX = Math.floor(Math.random() * (GRID_SIZE-1));
+                const randY = Math.floor(Math.random() * (GRID_SIZE-1));
+                if(!isPositionValidForAriranha(randX, randY, ignoreIndex)) continue;
+                if(minDistance > 0) {
+                    let head = snake[0];
+                    let centerX = randX + 0.5;
+                    let centerY = randY + 0.5;
+                    let dist = Math.abs(centerX - head.x) + Math.abs(centerY - head.y);
+                    if(dist < minDistance) continue;
+                }
+                return { x: randX, y: randY };
+            }
+            for(let i=0; i<GRID_SIZE-1; i++) {
+                for(let j=0; j<GRID_SIZE-1; j++) {
+                    if(isPositionValidForAriranha(i,j, ignoreIndex)) return { x:i, y:j };
+                }
+            }
+            return null;
+        }
+
+        function initAriranhas() {
+            ariranhas = [];
+            for(let i=0; i<ARIRANHA_COUNT; i++) {
+                let pos = getRandomAriranhaPosition(-1, MIN_DISTANCE_FROM_SNAKE);
+                if(pos) {
+                    ariranhas.push({ 
+                        x: pos.x, y: pos.y, 
+                        dx: (Math.random() - 0.5) * 1.2,
+                        dy: (Math.random() - 0.5) * 1.2
+                    });
+                } else {
+                    ariranhas.push({ x: 2 + (i*3) % (GRID_SIZE-2), y: 2 + (i*4) % (GRID_SIZE-2), dx: 0.5, dy: 0.4 });
+                }
+            }
+            updateUI();
+        }
+
+        function moveAriranhas() {
+            for(let i=0; i<ariranhas.length; i++) {
+                let a = ariranhas[i];
+                if(Math.random() < 0.12) {
+                    a.dx += (Math.random() - 0.5) * 1.0;
+                    a.dy += (Math.random() - 0.5) * 1.0;
+                    let speed = Math.hypot(a.dx, a.dy);
+                    if(speed > 1.5) { a.dx = a.dx / speed * 1.5; a.dy = a.dy / speed * 1.5; }
+                    if(speed < 0.3) { a.dx = (Math.random() - 0.5)*0.8; a.dy = (Math.random() - 0.5)*0.8; }
+                }
+                let newX = a.x + a.dx * 0.45;
+                let newY = a.y + a.dy * 0.45;
+                if(newX < 0 || newX+1 >= GRID_SIZE) { a.dx = -a.dx; newX = a.x + a.dx * 0.45; }
+                if(newY < 0 || newY+1 >= GRID_SIZE) { a.dy = -a.dy; newY = a.y + a.dy * 0.45; }
+                newX = Math.min(Math.max(0, newX), GRID_SIZE-2);
+                newY = Math.min(Math.max(0, newY), GRID_SIZE-2);
+                
+                let collision = false;
+                for(let j=0; j<ariranhas.length; j++) {
+                    if(j === i) continue;
+                    let other = ariranhas[j];
+                    if( (newX >= other.x && newX <= other.x+1) || (other.x >= newX && other.x <= newX+1) ) {
+                        if( (newY >= other.y && newY <= other.y+1) || (other.y >= newY && other.y <= newY+1) ) {
+                            collision = true;
+                            break;
+                        }
+                    }
+                }
+                if(!collision && isPositionValidForAriranha(Math.floor(newX), Math.floor(newY), i)) {
+                    a.x = newX;
+                    a.y = newY;
+                } else {
+                    a.dx = (Math.random() - 0.5) * 1.5;
+                    a.dy = (Math.random() - 0.5) * 1.5;
+                }
+            }
+            updateUI();
+        }
+
+        function teleportAriranhas() {
+            for(let i=0; i<ariranhas.length; i++) {
+                let newPos = getRandomAriranhaPosition(i, MIN_DISTANCE_FROM_SNAKE + 3);
+                if(newPos) {
+                    ariranhas[i].x = newPos.x;
+                    ariranhas[i].y = newPos.y;
+                    ariranhas[i].dx = (Math.random() - 0.5) * 1.2;
+                    ariranhas[i].dy = (Math.random() - 0.5) * 1.2;
+                }
+            }
+            updateUI();
+        }
+
+        function executeDischarge() {
+            if(!gameActive || victoryFlag) return;
+            if(dischargeCharges <= 0) return;
+            if(dischargeOnCooldown) return;
+            dischargeCharges--;
+            updateUI();
+            teleportAriranhas();
+            flashEffect();
+            dischargeOnCooldown = true;
+            if(cooldownTimeout) clearTimeout(cooldownTimeout);
+            cooldownTimeout = setTimeout(() => {
+                dischargeOnCooldown = false;
+                updateUI();
+            }, DISCHARGE_COOLDOWN_MS);
+            updateUI();
+        }
+
+        function flashEffect() {
+            canvas.classList.add('lightning-flash');
+            setTimeout(() => canvas.classList.remove('lightning-flash'), 180);
+        }
+
+        function moveSnake() {
+            if(!gameActive || victoryFlag) return false;
+            direction = nextDirection;
+            let head = snake[0];
+            let newHead = { ...head };
+            switch(direction) {
+                case 'RIGHT': newHead.x += 1; break;
+                case 'LEFT':  newHead.x -= 1; break;
+                case 'UP':    newHead.y -= 1; break;
+                case 'DOWN':  newHead.y += 1; break;
+            }
+            if(newHead.x < 0 || newHead.x >= GRID_SIZE || newHead.y < 0 || newHead.y >= GRID_SIZE) {
+                return true;
+            }
+            let ateFood = (newHead.x === food.x && newHead.y === food.y);
+            snake.unshift(newHead);
+            if(!ateFood) {
+                if(newSegmentsToAdd > 0) newSegmentsToAdd--;
+                else snake.pop();
+            } else {
+                newSegmentsToAdd++;
+                piranhasEaten++;
+                updateUI();
+                respawnFood();
+                if(piranhasEaten >= WIN_PIRANHAS) { victory(); return false; }
+                if(!food) respawnFood();
+            }
+            return true;
+        }
+
+        function checkAriranhaDirectCollision() {
+            if(!gameActive || victoryFlag) return false;
+            for(let a of ariranhas) {
+                for(let seg of snake) {
+                    if(seg.x >= a.x && seg.x <= a.x+1 && seg.y >= a.y && seg.y <= a.y+1) {
+                        gameOver();
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        function updateUI() {
+            eatCountSpan.innerText = piranhasEaten;
+            targetCountSpan.innerText = WIN_PIRANHAS;
+            snakeLengthSpan.innerText = snake.length;
+            ariranhaCountSpan.innerText = ariranhas.length;
+            chargeCountSpan.innerText = dischargeCharges;
+            if(dischargeCharges <= 0 || dischargeOnCooldown || !gameActive || victoryFlag) {
+                dischargeBtn.classList.add('disabled');
+                if(dischargeCharges <= 0) dischargeBtn.innerText = '❌ SEM CARGAS';
+                else if(dischargeOnCooldown) dischargeBtn.innerText = '⏳ RECARREGANDO';
+                else dischargeBtn.innerText = '⚡ ELETRICIDADE [E]';
+            } else {
+                dischargeBtn.classList.remove('disabled');
+                dischargeBtn.innerText = `⚡ ELETRICIDADE (${dischargeCharges}) [E]`;
+            }
+        }
+
+        function victory() {
+            if(!gameActive) return;
+            gameActive = false;
+            victoryFlag = true;
+            if(gameLoopInterval) clearInterval(gameLoopInterval);
+            gameLoopInterval = null;
+            drawVictoryScreen();
+            updateUI();
+        }
+
+        function gameOver() {
+            if(!gameActive) return;
+            gameActive = false;
+            victoryFlag = false;
+            if(gameLoopInterval) clearInterval(gameLoopInterval);
+            gameLoopInterval = null;
+            drawGameOverScreen();
+            updateUI();
+        }
+
+        // ========== GRÁFICOS ==========
+        function drawTerritoryWarning(x, y) {
+            const px = (x-1) * CELL_SIZE;
+            const py = (y-1) * CELL_SIZE;
+            ctx.fillStyle = '#ffaa3355';
+            ctx.fillRect(px, py, CELL_SIZE*4, CELL_SIZE*4);
+        }
+
+        function drawPoraqueSegment(x, y, isHead) {
+            const px = x * CELL_SIZE;
+            const py = y * CELL_SIZE;
+            const grad = ctx.createLinearGradient(px+3, py+2, px+22, py+22);
+            grad.addColorStop(0, '#7c4a2a');
+            grad.addColorStop(1, '#b87c41');
+            ctx.fillStyle = grad;
+            ctx.fillRect(px+1, py+1, CELL_SIZE-2, CELL_SIZE-2);
+            ctx.fillStyle = '#e0a45e';
+            for(let i=0;i<2;i++) {
+                ctx.beginPath();
+                ctx.arc(px+5+i*8, py+18, 2, 0, Math.PI*2);
+                ctx.fill();
+            }
+            if(isHead) {
+                ctx.fillStyle = "#f4e5b9";
+                ctx.beginPath();
+                ctx.ellipse(px+18, py+8, 4, 5, 0, 0, Math.PI*2);
+                ctx.fill();
+                ctx.fillStyle = "#1f2f1a";
+                ctx.beginPath();
+                ctx.arc(px+19, py+7, 2, 0, Math.PI*2);
+                ctx.fill();
+                ctx.fillStyle = "white";
+                ctx.beginPath();
+                ctx.arc(px+21, py+5, 1, 0, Math.PI*2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.strokeStyle = "#ffc857";
+                ctx.lineWidth = 1.5;
+                ctx.moveTo(px+23, py+14);
+                ctx.lineTo(px+28, py+18);
+                ctx.stroke();
+                ctx.moveTo(px+21, py+16);
+                ctx.lineTo(px+27, py+22);
+                ctx.stroke();
+            }
+        }
+
+        function drawPiranha(x, y) {
+            const px = x * CELL_SIZE;
+            const py = y * CELL_SIZE;
+            ctx.fillStyle = '#e35f41';
+            ctx.beginPath();
+            ctx.ellipse(px+12, py+13, 9, 7, 0, 0, Math.PI*2);
+            ctx.fill();
+            ctx.fillStyle = '#bd2f1a';
+            ctx.beginPath();
+            ctx.moveTo(px+20, py+8);
+            ctx.lineTo(px+27, py+12);
+            ctx.lineTo(px+20, py+16);
+            ctx.fill();
+            ctx.fillStyle = "#ffffff";
+            ctx.beginPath();
+            ctx.arc(px+8, py+10, 2.5, 0, Math.PI*2);
+            ctx.fill();
+            ctx.fillStyle = "#000000";
+            ctx.beginPath();
+            ctx.arc(px+7, py+9, 1.2, 0, Math.PI*2);
+            ctx.fill();
+            ctx.fillStyle = "#fff2db";
+            for(let d=0;d<2;d++) ctx.fillRect(px+19+d*3, py+12, 1.5, 4);
+        }
+
+        function drawAriranha(x, y) {
+            const px = x * CELL_SIZE;
+            const py = y * CELL_SIZE;
+            const w = CELL_SIZE * 2;
+            const h = CELL_SIZE * 2;
+            ctx.fillStyle = '#6b4423';
+            ctx.beginPath();
+            ctx.ellipse(px+w/2, py+h/2-2, w/2-3, h/2-4, 0, 0, Math.PI*2);
+            ctx.fill();
+            ctx.fillStyle = '#a56b2f';
+            ctx.beginPath();
+            ctx.ellipse(px+w-8, py+12, 9, 7, 0, 0, Math.PI*2);
+            ctx.fill();
+            ctx.fillStyle = '#d4934b';
+            ctx.beginPath();
+            ctx.ellipse(px+w-3, py+14, 4, 3, 0, 0, Math.PI*2);
+            ctx.fill();
+            ctx.fillStyle = "#000000";
+            ctx.beginPath();
+            ctx.arc(px+w-10, py+10, 2, 0, Math.PI*2);
+            ctx.fill();
+            ctx.fillStyle = "white";
+            ctx.beginPath();
+            ctx.arc(px+w-11, py+9, 0.8, 0, Math.PI*2);
+            ctx.fill();
+            ctx.fillStyle = '#8b5a2b';
+            ctx.beginPath();
+            ctx.moveTo(px+5, py+h-8);
+            ctx.quadraticCurveTo(px+2, py+h-2, px+8, py+h-3);
+            ctx.fill();
+            ctx.fillStyle = '#5d3a1a';
+            ctx.fillRect(px+8, py+h-6, 5, 3);
+            ctx.fillRect(px+w-18, py+h-6, 5, 3);
+        }
+
+        function drawBackground() {
+            ctx.fillStyle = '#1a795b';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            for(let i=0;i<GRID_SIZE;i++) {
+                for(let j=0;j<GRID_SIZE;j++) {
+                    if((i+j)%2===0) {
+                        ctx.fillStyle = '#238f6b';
+                        ctx.fillRect(i*CELL_SIZE, j*CELL_SIZE, CELL_SIZE, CELL_SIZE);
+                    }
+                }
+            }
+        }
+
+        function drawGame() {
+            drawBackground();
+            for(let a of ariranhas) drawTerritoryWarning(a.x, a.y);
+            for(let a of ariranhas) drawAriranha(a.x, a.y);
+            drawPiranha(food.x, food.y);
+            for(let i=0;i<snake.length;i++) {
+                drawPoraqueSegment(snake[i].x, snake[i].y, i===0);
+            }
+            if(!gameActive && victoryFlag) drawVictoryScreen();
+            else if(!gameActive && !victoryFlag) drawGameOverScreen();
+        }
+
+        function drawGameOverScreen() {
+            ctx.fillStyle = 'rgba(8, 30, 22, 0.85)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.font = 'bold 20px "Segoe UI"';
+            ctx.fillStyle = '#ffb45e';
+            ctx.fillText('💀 GAME OVER', canvas.width/2-75, canvas.height/2-20);
+            ctx.font = '12px monospace';
+            ctx.fillStyle = '#e9c47c';
+            ctx.fillText('Você entrou no território das ariranhas...', canvas.width/2-145, canvas.height/2+20);
+            ctx.fillText('Use a eletricidade com sabedoria.', canvas.width/2-120, canvas.height/2+55);
+        }
+
+        function drawVictoryScreen() {
+            ctx.fillStyle = 'rgba(28, 70, 48, 0.9)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.font = 'bold 20px "Segoe UI"';
+            ctx.fillStyle = '#FFD966';
+            ctx.fillText('🏆 VITÓRIA!', canvas.width/2-65, canvas.height/2-35);
+            ctx.font = '14px system-ui';
+            ctx.fillStyle = '#f1f7c3';
+            ctx.fillText('Virou um Poraquê adulto: TOPO DA CADEIA!', canvas.width/2-145, canvas.height/2+5);
+            ctx.font = '11px monospace';
+            ctx.fillStyle = '#b8f0c0';
+            ctx.fillText('Você ajudou no equilíbrio ecológico da Amazônia.', canvas.width/2-145, canvas.height/2+45);
+        }
+
+        function gameTick() {
+            if(!gameActive) { drawGame(); return; }
+            if(victoryFlag) return;
+            moveSnake();
+            moveAriranhas();
+            if(checkTerritoryCollision()) { drawGame(); return; }
+            if(checkAriranhaDirectCollision()) { drawGame(); return; }
+            updateUI();
+            drawGame();
+        }
+
+        function resetGame() {
+            if(gameLoopInterval) clearInterval(gameLoopInterval);
+            if(cooldownTimeout) clearTimeout(cooldownTimeout);
+            gameActive = true;
+            victoryFlag = false;
+            piranhasEaten = 0;
+            newSegmentsToAdd = 0;
+            direction = 'RIGHT';
+            nextDirection = 'RIGHT';
+            dischargeCharges = 2;
+            dischargeOnCooldown = false;
+            snake = [
+                { x: 10, y: 10 }, { x: 9, y: 10 }, 
+                { x: 8, y: 10 }, { x: 7, y: 10 }, { x: 6, y: 10 }
+            ];
+            initAriranhas();
+            food = getRandomEmptyPositionForFood();
+            updateUI();
+            drawGame();
+            gameLoopInterval = setInterval(() => gameTick(), GAME_SPEED_MS);
+        }
+
+        function setDirection(newDir) {
+            if(!gameActive || victoryFlag) return;
+            if(newDir === 'UP' && direction !== 'DOWN') nextDirection = 'UP';
+            else if(newDir === 'DOWN' && direction !== 'UP') nextDirection = 'DOWN';
+            else if(newDir === 'LEFT' && direction !== 'RIGHT') nextDirection = 'LEFT';
+            else if(newDir === 'RIGHT' && direction !== 'LEFT') nextDirection = 'RIGHT';
+        }
+
+        function handleKeydown(e) {
+            const key = e.key;
+            if(key === 'ArrowUp') setDirection('UP');
+            else if(key === 'ArrowDown') setDirection('DOWN');
+            else if(key === 'ArrowLeft') setDirection('LEFT');
+            else if(key === 'ArrowRight') setDirection('RIGHT');
+            else if(key === 'e' || key === 'E') { e.preventDefault(); executeDischarge(); }
+        }
+
+        document.querySelectorAll('.arrow-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const dir = btn.getAttribute('data-dir');
+                if(dir) setDirection(dir);
+            });
+            btn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                const dir = btn.getAttribute('data-dir');
+                if(dir) setDirection(dir);
+            });
+        });
+
+        const modal = document.getElementById('introModal');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        closeModalBtn.addEventListener('click', () => {
+            modal.style.display = 'none';
+            resetGame();
+        });
+
+        window.addEventListener('load', () => {
+            resetGame();
+            window.addEventListener('keydown', handleKeydown);
+            dischargeBtn.addEventListener('click', () => executeDischarge());
+            restartBtn.addEventListener('click', () => {
+                if(gameLoopInterval) clearInterval(gameLoopInterval);
+                resetGame();
+            });
+        });
+    })();
+</script>
+</body>
+</html>
